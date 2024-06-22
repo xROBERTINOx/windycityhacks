@@ -1,33 +1,31 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, act } from 'react';
 import { Chart, ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
 
 
 Chart.register(ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-
-
-
-
 function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
     const [unit, setUnit] = useState('miles'); // Combine distanceUnit and paceUnit into a single state
-    const chartRef= useRef(null);
+    const chartRef= useRef<HTMLCanvasElement | null>(null);
+    const chartRefSpeedData= useRef<HTMLCanvasElement | null>(null);
     const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
+    const [speedData, setSpeedData] = useState<{ x: number; y: number; }[]>([]);
 
     useEffect(() => {
-        let chartInstance = null;
+        let chartInstanceSpeedData = null;
 
-        if (!isLoading && chartRef.current && chartRef.current.getContext) {
-            const ctx = chartRef.current.getContext('2d');
+        if (!isLoading && chartRefSpeedData.current && chartRefSpeedData.current.getContext) {
+            const ctx = chartRefSpeedData.current.getContext('2d') as CanvasRenderingContext2D;
             
-            chartInstance = new Chart(ctx, {
+            chartInstanceSpeedData = new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
-                        label: 'Run Distance vs. Pace',
-                        data: chartData,
+                        label: 'Run # vs. Avg Speed',
+                        data: speedData,
                         backgroundColor: 'rgba(75, 192, 192, 0.6)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         pointRadius: 6,
@@ -41,7 +39,7 @@ function App() {
                             position: 'bottom',
                             title: {
                                 display: true,
-                                text: 'Distance (miles)'
+                                text: 'Run #'
                             }
                         },
                         y: {
@@ -49,14 +47,14 @@ function App() {
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Pace (minutes/mile)'
+                                text: 'Avg Speed (minutes per mile)'
                             }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Run Distance vs. Pace'
+                            text: 'Run # vs. Avg Speed'
                         },
                         legend: {
                             display: false
@@ -67,16 +65,11 @@ function App() {
         }
 
         return () => {
-            if (chartInstance) {
-                chartInstance.destroy();
+            if (chartInstanceSpeedData) {
+                chartInstanceSpeedData.destroy();
             }
         };
     }, [isLoading]);
-
-    const addDataPoint = useCallback((x1: number, y1: number) => {
-        setChartData(prevData => [...prevData, {x: x1, y: y1}]);
-    }, []);
-
 
     // Strava Credentials
     let clientID = "127908";
@@ -115,6 +108,16 @@ function App() {
                             y: (26.8224 / activity.average_speed)
                         }));  
                     setChartData(prevData => [...prevData, ...newDataPoints]);  
+                    console.log(data.length)
+                    setSpeedData(prevData => {
+                        const newDataPointsSpeed = data 
+                            .filter((activity: any) => activity.type === 'Run')
+                            .map((activity: any, index: number) => ({
+                                x: data.length - index,
+                                y: (26.8224 / activity.average_speed)
+                            }));
+                        return [...prevData, ...newDataPointsSpeed];
+                    });
                 } else {
                     const newDataPoints = data
                         .filter((activity: any) => activity.type === 'Run')
@@ -133,15 +136,7 @@ function App() {
         if (isLoading) return <>LOADING</>;
         if (!isLoading) {
             return (
-                <ul>
-                    {activities.map(activity => (
-                        <li key={activity.id}>
-                            {activity.name}, distance: {unit === 'miles' ? (activity.distance / 1609.344).toFixed(2) + ' miles' : (activity.distance / 1000).toFixed(2) + ' kilometers'}, 
-                            avg pace: {calculatePace(activity.average_speed)}
-                        </li>
-                        
-                    ))}
-                </ul>
+                <h1>Loaded!</h1>
             );
         }
     }
@@ -172,6 +167,7 @@ function App() {
             {showActivities()}
             <div style={{ width: '80%', maxWidth: '600px', margin: '20px auto' }}>
                 <canvas ref={chartRef}></canvas>
+                <canvas ref={chartRefSpeedData}></canvas>
             </div>
         </div>
     );
