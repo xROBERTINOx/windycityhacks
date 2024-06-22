@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
+    const [distanceUnit, setDistanceUnit] = useState('miles'); // Add distanceUnit state
 
     // Strava Credentials
     let clientID = "127908";
@@ -43,7 +44,10 @@ function App() {
             return (
                 <ul>
                     {activities.map(activity => (
-                        <li key={activity.id}>{activity.name}</li>
+                        <li key={activity.id}>
+                            {activity.name}, distance: {distanceUnit === 'miles' ? (activity.distance / 1609.344).toFixed(2) + ' miles' : (activity.distance / 1000).toFixed(2) + ' kilometers'}, 
+                            avg speed: {(26.8224/activity.average_speed).toFixed(2)}
+                        </li>
                     ))}
                 </ul>
             );
@@ -52,6 +56,13 @@ function App() {
 
     return (
         <div className="App">
+            <div>
+                <label htmlFor="distanceUnit">Distance Unit:</label>
+                <select id="distanceUnit" value={distanceUnit} onChange={(e) => setDistanceUnit(e.target.value)} style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}>
+                    <option value="miles">Miles</option>
+                    <option value="kilometers">Kilometers</option>
+                </select>
+            </div>
             {showActivities()}
         </div>
     );
