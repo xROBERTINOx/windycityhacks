@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
-    const [distanceUnit, setDistanceUnit] = useState('miles'); // Add distanceUnit state
+    const [unit, setUnit] = useState('miles'); // Combine distanceUnit and paceUnit into a single state
 
     // Strava Credentials
     let clientID = "127908";
@@ -45,8 +45,8 @@ function App() {
                 <ul>
                     {activities.map(activity => (
                         <li key={activity.id}>
-                            {activity.name}, distance: {distanceUnit === 'miles' ? (activity.distance / 1609.344).toFixed(2) + ' miles' : (activity.distance / 1000).toFixed(2) + ' kilometers'}, 
-                            avg speed: {(26.8224/activity.average_speed).toFixed(2)}
+                            {activity.name}, distance: {unit === 'miles' ? (activity.distance / 1609.344).toFixed(2) + ' miles' : (activity.distance / 1000).toFixed(2) + ' kilometers'}, 
+                            avg pace: {calculatePace(activity.average_speed)}
                         </li>
                     ))}
                 </ul>
@@ -54,11 +54,25 @@ function App() {
         }
     }
 
+    function calculatePace(speed: number) {
+        if (unit === 'miles') {
+            const pace = 26.8224 / speed;
+            const minutes = Math.floor(pace);
+            const seconds = Math.floor((pace - minutes) * 60);
+            return `${minutes}:${seconds < 10 ? '0' + seconds : seconds} per mile`;
+        } else if (unit === 'kilometers') {
+            const pace = 16.6667 / speed;
+            const minutes = Math.floor(pace);
+            const seconds = Math.floor((pace - minutes) * 60);
+            return `${minutes}:${seconds < 10 ? '0' + seconds : seconds} per kilometer`;
+        }
+    }
+
     return (
         <div className="App">
             <div>
-                <label htmlFor="distanceUnit">Distance Unit:</label>
-                <select id="distanceUnit" value={distanceUnit} onChange={(e) => setDistanceUnit(e.target.value)} style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}>
+                <label htmlFor="unit">Unit:</label>
+                <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}>
                     <option value="miles">Miles</option>
                     <option value="kilometers">Kilometers</option>
                 </select>
