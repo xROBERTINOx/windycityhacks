@@ -1,10 +1,82 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Chart, ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
+
+
+Chart.register(ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend);
+
+
+
+
 
 function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
     const [unit, setUnit] = useState('miles'); // Combine distanceUnit and paceUnit into a single state
+    const chartRef= useRef(null);
+    const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
+
+    useEffect(() => {
+        let chartInstance = null;
+
+        if (!isLoading && chartRef.current && chartRef.current.getContext) {
+            const ctx = chartRef.current.getContext('2d');
+            
+            chartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Run Distance vs. Pace',
+                        data: chartData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Distance (miles)'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Pace (minutes/mile)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Run Distance vs. Pace'
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        return () => {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+        };
+    }, [isLoading]);
+
+    const addDataPoint = useCallback((x1: number, y1: number) => {
+        setChartData(prevData => [...prevData, {x: x1, y: y1}]);
+    }, []);
+
 
     // Strava Credentials
     let clientID = "127908";
@@ -34,9 +106,28 @@ function App() {
                 setActivities(data);
                 setIsLoading(false);
                 console.log(data); // Log activities to console
+                
+                if (unit === 'miles') {
+                    const newDataPoints = data
+                        .filter((activity: any) => activity.type === 'Run')
+                        .map((activity: any) => ({
+                            x: (activity.distance / 1609.344).toFixed(2),
+                            y: (26.8224 / activity.average_speed)
+                        }));  
+                    setChartData(prevData => [...prevData, ...newDataPoints]);  
+                } else {
+                    const newDataPoints = data
+                        .filter((activity: any) => activity.type === 'Run')
+                        .map((activity: any) => ({
+                            x: (activity.distance / 1000).toFixed(2),
+                            y: (16.6667 / activity.average_speed)
+                        }));
+                    setChartData(prevData => [...prevData, ...newDataPoints]);
+                }
             })
             .catch(e => console.log(e));
     }
+
 
     function showActivities() {
         if (isLoading) return <>LOADING</>;
@@ -48,6 +139,7 @@ function App() {
                             {activity.name}, distance: {unit === 'miles' ? (activity.distance / 1609.344).toFixed(2) + ' miles' : (activity.distance / 1000).toFixed(2) + ' kilometers'}, 
                             avg pace: {calculatePace(activity.average_speed)}
                         </li>
+                        
                     ))}
                 </ul>
             );
@@ -78,6 +170,9 @@ function App() {
                 </select>
             </div>
             {showActivities()}
+            <div style={{ width: '80%', maxWidth: '600px', margin: '20px auto' }}>
+                <canvas ref={chartRef}></canvas>
+            </div>
         </div>
     );
 }
