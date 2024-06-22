@@ -11,9 +11,10 @@ function App() {
     const [unit, setUnit] = useState('miles'); // Combine distanceUnit and paceUnit into a single state
     const chartRef= useRef<HTMLCanvasElement | null>(null);
     const chartRefSpeedData= useRef<HTMLCanvasElement | null>(null);
+    const chartRefHeartRateData = useRef<HTMLCanvasElement | null>(null);
     const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
     const [speedData, setSpeedData] = useState<{ x: number; y: number; }[]>([]);
-
+    const [heartRateData, setHeartRateData] = useState<{ x: number; y: number; }[]>([])
 
     function linearRegression(data: { x: number; y: number; }[]) {
         let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
@@ -26,28 +27,65 @@ function App() {
             sumXX += data[i].x * data[i].x;
         }
     
-        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
+        let slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        let intercept = (sumY - slope * sumX) / n;
     
         return { slope, intercept };
     }
 
+    function heartRatelinearRegression(data: { x: number; y: number | null | undefined; }[]) {
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        let validPoints = 0;
+    
+        for (const point of data) {
+            if (typeof point.y === 'number' && !isNaN(point.y)) {
+                sumX += point.x;
+                sumY += point.y;
+                sumXY += point.x * point.y;
+                sumXX += point.x * point.x;
+                validPoints++;
+            }
+        }
+    
+        if (validPoints < 2) {
+            // Not enough valid points to calculate a trend line
+            return { heartRateSlope: 0, heartRateIntercept: 0 };
+        }
+    
+        let heartRateSlope = (validPoints * sumXY - sumX * sumY) / (validPoints * sumXX - sumX * sumX);
+        let heartRateIntercept = (sumY - heartRateSlope * sumX) / validPoints;
+    
+        return { heartRateSlope, heartRateIntercept };
+    }
 
     useEffect(() => {
         let chartInstanceSpeedData = null;
+        let chartInstanceHeartRateData = null;
 
-        if (!isLoading && chartRefSpeedData.current && chartRefSpeedData.current.getContext) {
+        if (!isLoading && chartRefSpeedData.current && chartRefSpeedData.current.getContext && chartRefHeartRateData.current && chartRefHeartRateData.current.getContext) {
             const speedDataCtx = chartRefSpeedData.current.getContext('2d') as CanvasRenderingContext2D;
+            const heartRateDataCtx = chartRefHeartRateData.current.getContext('2d') as CanvasRenderingContext2D;
             
             // Calculate linear regression
             const { slope, intercept } = linearRegression(speedData);
-        
+
             // Generate trend line data
-            const trendlineData = speedData.map(point => ({
+            const trendlineSpeedData = speedData.map(point => ({
                 x: point.x,
                 y: slope * point.x + intercept
             }));
-        
+
+            const { heartRateSlope, heartRateIntercept } = heartRatelinearRegression(heartRateData);
+            
+            const trendLineHeartRateData = heartRateData.map(heartpoint => ({
+                x: heartpoint.x,
+                y: heartRateSlope * heartpoint.x + heartRateIntercept
+            }));
+            console.log("Speed Data:", speedData);
+        console.log("Speed Trend Line:", trendlineSpeedData);
+        console.log("Heart Rate Data:", heartRateData);
+        console.log("Heart Rate Trend Line:", trendLineHeartRateData);
+
             chartInstanceSpeedData = new Chart(speedDataCtx, {
                 type: 'scatter',
                 data: {
@@ -63,8 +101,8 @@ function App() {
                         },
                         {
                             type: 'line',
-                            label: 'Trend Line',
-                            data: trendlineData,
+                            label: 'Speed Trend Line',
+                            data: trendlineSpeedData,
                             fill: false,
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 2,
@@ -103,6 +141,63 @@ function App() {
                     }
                 }
             });
+
+            chartInstanceHeartRateData = new Chart(heartRateDataCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            type: 'scatter',
+                            label: 'Run # vs. Avg Heart Rate',
+                            data: heartRateData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                        },
+                        {
+                            type: 'line',
+                            label: 'Heart Rate Trend Line',
+                            data: trendLineHeartRateData,
+                            fill: false,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Run #'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Avg Speed (minutes per mile)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Run # vs. Avg Speed with Trend Line'
+                        },
+                        legend: {
+                            display: true
+                        }
+                    }
+                }                
+            });
+            
         }
 
         return () => {
@@ -136,7 +231,7 @@ function App() {
             .then(data => {
                 setActivities(data);
                 setIsLoading(false);
-                console.log(data); // Log activities to console
+                // console.log(data); // Log activities to console
                 
                 if (unit === 'miles') {
                     const newDataPoints = data
@@ -146,7 +241,7 @@ function App() {
                             y: (26.8224 / activity.average_speed)
                         }));  
                     setChartData(prevData => [...prevData, ...newDataPoints]);  
-                    console.log(data.length)
+                    // console.log(data.length)
                     setSpeedData(prevData => {
                         const newDataPointsSpeed = data 
                             .filter((activity: any) => activity.type === 'Run')
@@ -155,6 +250,15 @@ function App() {
                                 y: (26.8224 / activity.average_speed)
                             }));
                         return [...prevData, ...newDataPointsSpeed];
+                    });
+                    setHeartRateData(prevData => {
+                        const newDataPointsHeartRate = data
+                        .filter((activity: any) => activity.type === 'Run')
+                        .map((activity: any, index: number) => ({
+                            x: data.length - index,
+                            y: activity.average_heartrate
+                        }))
+                        return [...prevData, ...newDataPointsHeartRate];
                     });
                 } else {
                     const newDataPoints = data
@@ -206,6 +310,7 @@ function App() {
             <div style={{ width: '80%', maxWidth: '600px', margin: '20px auto' }}>
                 <canvas ref={chartRef}></canvas>
                 <canvas ref={chartRefSpeedData}></canvas>
+                <canvas ref={chartRefHeartRateData}></canvas>
             </div>
         </div>
     );
