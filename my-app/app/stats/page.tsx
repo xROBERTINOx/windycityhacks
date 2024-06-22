@@ -1,11 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, act } from 'react';
 import { Chart, ScatterController, LineController, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
+import Header from '../Header';
+import { setLocalStorage, getLocalStorage } from '../localStorage';
+import { useRouter } from 'next/navigation';
 
 
 Chart.register(ScatterController, LineController, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-function App() {
+function App() {    
     const [isLoading, setIsLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
     const [unit, setUnit] = useState('miles'); // Combine distanceUnit and paceUnit into a single state
@@ -15,6 +18,16 @@ function App() {
     const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
     const [speedData, setSpeedData] = useState<{ x: number; y: number; }[]>([]);
     const [heartRateData, setHeartRateData] = useState<{ x: number; y: number; }[]>([])
+    const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+    const router = useRouter();
+  
+    useEffect(() => {
+        const storedData = getLocalStorage('isSignedIn');
+        if (!storedData) {
+          router.push('/signin');
+        }
+      }, []);
+
 
     function linearRegression(data: { x: number; y: number; }[]) {
         let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
@@ -81,10 +94,6 @@ function App() {
                 x: heartpoint.x,
                 y: heartRateSlope * heartpoint.x + heartRateIntercept
             }));
-            console.log("Speed Data:", speedData);
-        console.log("Speed Trend Line:", trendlineSpeedData);
-        console.log("Heart Rate Data:", heartRateData);
-        console.log("Heart Rate Trend Line:", trendLineHeartRateData);
 
             chartInstanceSpeedData = new Chart(speedDataCtx, {
                 type: 'scatter',
@@ -299,6 +308,7 @@ function App() {
 
     return (
         <div className="App">
+            <Header />
             <div>
                 <label htmlFor="unit">Unit:</label>
                 <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}>
