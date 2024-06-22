@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, act } from 'react';
-import { Chart, ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
+import { Chart, ScatterController, LineController, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
 
 
-Chart.register(ScatterController, LinearScale, PointElement, LineElement, Tooltip, Legend);
+Chart.register(ScatterController, LineController, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 function App() {
     const [isLoading, setIsLoading] = useState(true);
@@ -14,23 +14,64 @@ function App() {
     const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
     const [speedData, setSpeedData] = useState<{ x: number; y: number; }[]>([]);
 
+
+    function linearRegression(data: { x: number; y: number; }[]) {
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        const n = data.length;
+    
+        for (let i = 0; i < n; i++) {
+            sumX += data[i].x;
+            sumY += data[i].y;
+            sumXY += data[i].x * data[i].y;
+            sumXX += data[i].x * data[i].x;
+        }
+    
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+    
+        return { slope, intercept };
+    }
+
+
     useEffect(() => {
         let chartInstanceSpeedData = null;
 
         if (!isLoading && chartRefSpeedData.current && chartRefSpeedData.current.getContext) {
-            const ctx = chartRefSpeedData.current.getContext('2d') as CanvasRenderingContext2D;
+            const speedDataCtx = chartRefSpeedData.current.getContext('2d') as CanvasRenderingContext2D;
             
-            chartInstanceSpeedData = new Chart(ctx, {
+            // Calculate linear regression
+            const { slope, intercept } = linearRegression(speedData);
+        
+            // Generate trend line data
+            const trendlineData = speedData.map(point => ({
+                x: point.x,
+                y: slope * point.x + intercept
+            }));
+        
+            chartInstanceSpeedData = new Chart(speedDataCtx, {
                 type: 'scatter',
                 data: {
-                    datasets: [{
-                        label: 'Run # vs. Avg Speed',
-                        data: speedData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                    }]
+                    datasets: [
+                        {
+                            type: 'scatter',
+                            label: 'Run # vs. Avg Speed (Scatter)',
+                            data: speedData,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                        },
+                        {
+                            type: 'line',
+                            label: 'Trend Line',
+                            data: trendlineData,
+                            fill: false,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0
+                        }
+                    ]
                 },
                 options: {
                     scales: {
@@ -54,10 +95,10 @@ function App() {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Run # vs. Avg Speed'
+                            text: 'Run # vs. Avg Speed with Trend Line'
                         },
                         legend: {
-                            display: false
+                            display: true
                         }
                     }
                 }
@@ -74,14 +115,11 @@ function App() {
     // Strava Credentials
     let clientID = "127908";
     let clientSecret = "918d9334b7479e49becbde94c3eeec4f03b4d06a";
-
     // refresh token and call address
     const refreshToken = "a3ec90ef220e6dc7f639d6a80f7ef5078c756d25";
     const callRefresh = `https://www.strava.com/oauth/token?client_id=${clientID}&client_secret=${clientSecret}&refresh_token=${refreshToken}&grant_type=refresh_token`;
-
     // endpoint for read-all activities. temporary token is added in getActivities()
     const callActivities = `https://www.strava.com/api/v3/athlete/activities?access_token=`;
-
     // Use refresh token to get current access token
     useEffect(() => {
         fetch(callRefresh, {
