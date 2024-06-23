@@ -15,10 +15,24 @@ const HomePage: React.FC = () => {
         />
 
         <Section
+          title="DASH-board"
+          description='Level up your runs by tracking your progress with experience points and achievements'
+          buttonText='View DASH-board'
+          buttonLink='/dashboard'
+        />
+
+        <Section
           title="AI Personal Trainer"
           description="Get personalized training plans based on your current fitness level and running goals, powered by advanced AI."
           buttonText="Start Training"
           buttonLink="/trainer"
+        />
+
+        <Section
+          title="Community"
+          description="Connect with other runners, share your achievements, and join running groups in your area."
+          buttonText="Join Community"
+          buttonLink="/community"
         />
 
         <Section
@@ -29,10 +43,10 @@ const HomePage: React.FC = () => {
         />
 
         <Section
-          title="Community"
-          description="Connect with other runners, share your achievements, and join running groups in your area."
-          buttonText="Join Community"
-          buttonLink="/community"
+          title="Shopping"
+          description="Your one stop for finding deals on all running gear. From shoes to watches, we have it all!"
+          buttonText="Find deals"
+          buttonLink="/shopping"
         />
       </div>
     </div>
