@@ -49,6 +49,13 @@ const HomePage: React.FC = () => {
           buttonLink="/shopping"
         />
       </div>
+
+      <div className="mt-12 text-center">
+        <h2 className="text-2xl font-semibold mb-4">About</h2>
+        <p className="text-gray-600">
+          Made with Next.js, Google Gemini, and Strava API
+        </p>
+      </div>
     </div>
   );
 };
@@ -70,7 +77,6 @@ const Section: React.FC<SectionProps> = ({ title, description, buttonText, butto
           {buttonText}
         </button>
       </Link>
-      {/* put what this button should do */}
     </div>
   );
 };
