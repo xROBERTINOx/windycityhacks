@@ -29,17 +29,17 @@ const HomePage: React.FC = () => {
         />
 
         <Section
-          title="Community"
+          title="Friends"
           description="Connect with other runners, share your achievements, and join running groups in your area."
-          buttonText="Join Community"
-          buttonLink="/community"
+          buttonText="View Friends"
+          buttonLink="/friends"
         />
 
         <Section
           title="Upcoming Runs"
           description="Discover running events in your area and across the nation. Find your next challenge or fun run!"
           buttonText="Explore Events"
-          buttonLink="/events"
+          buttonLink="/competitions"
         />
 
         <Section

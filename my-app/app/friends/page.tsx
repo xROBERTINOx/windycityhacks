@@ -2,6 +2,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Header from '../Header';
+import { setLocalStorage, getLocalStorage } from '../localStorage';
+import { useRouter } from 'next/navigation';
+
+
+
 
 // Mock data for friends
 const initialFriends = [
@@ -20,6 +25,12 @@ const FriendsPage = () => {
     setSearchTerm(e.target.value);
     // In a real app, you would make an API call here to search for friends
   };
+
+  const router = useRouter();
+  if (getLocalStorage('isSignedIn') !== true) {
+    router.push('/signin');
+}
+
 
   return (
     <div className="min-h-screen bg-black text-white">

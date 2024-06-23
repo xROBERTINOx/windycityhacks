@@ -2,8 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../Header';
 
+
+import { setLocalStorage, getLocalStorage } from '../localStorage';
+import { useRouter } from 'next/navigation';
+
+
+
+
+
 const ShoppingPage: React.FC = () => {
     
+
+    const router = useRouter();
+  if (getLocalStorage('isSignedIn') !== true) {
+    router.push('/signin');
+}
+
     const initialItems = [
         { id: 1, name: "Garmin Forerunner 255S", price: 304.99, msrp: 349.99, seller: "Amazon" },
         { id: 2, name: "Nike Infinity Run 4", price: 149.99, msrp: 189.99, seller: "Dicks Sporting Goods" },

@@ -2,9 +2,15 @@
 'use client';
 import React, { useState } from 'react';
 import Header from '../Header';
+import { useRouter } from 'next/navigation';
+import { setLocalStorage, getLocalStorage } from '../localStorage';
 
 const Dashboard = () => {
   const [leaderboardScope, setLeaderboardScope] = useState<'nationwide' | 'worldwide'>('nationwide');
+  const router = useRouter();
+  if (getLocalStorage('isSignedIn') !== true) {
+    router.push('/signin');
+}
 
   // Mock data - replace with actual data fetching in a real application
   const xp = 1250;

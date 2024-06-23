@@ -2,8 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../Header';
 
+import { setLocalStorage, getLocalStorage } from '../localStorage';
+import { useRouter } from 'next/navigation';
+
+
+
+
 const ShoppingPage: React.FC = () => {
     
+    const router = useRouter();
+    if (getLocalStorage('isSignedIn') !== true) {
+      router.push('/signin');
+  }
+  
+
     const nearYouRaces = [
         { id: 1, name: "Cool 5k", location: "Chicago, IL", distance: "5km", date: "8-2-2024" },
         { id: 2, name: "Fly Away 10k", location: "Chicago, IL", distance: "10km", date: "9-12-2024" },
@@ -12,21 +24,24 @@ const ShoppingPage: React.FC = () => {
     ];
 
     const nationalCompetitions = [
-        { id: 1, name: "Chicago Marathon", location: 42195, distance: "meters", date: "2024-10-13" },
+        { id: 1, name: "Chicago Marathon", location: "Chicago, IL", distance: "13.1m", date: "2024-10-13" },
+        { id: 2, name: "New York City Marathon", location: "New York, NY", distance: "13.1m", date: "2024-11-03" },
+        { id: 3, name: "Boston 10K for kids", location: "Boston, MA", distance: "10km", date: "2024-10-12" },
+        { id: 4, name: "Atlanta Peach ultra marathon", location: "Atlanta, GA", distance: "50km", date: "2024-07-04" },
     ];
 
     const InternationalCompetitions = [
-        { id: 1, name: "Nike Infinity Run 4", location: 149.99, distance: 189.99, date: "Dicks Sporting Goods" },
-        { id: 2, name: "Adidas Ultraboost 22", location: 179.99, distance: 199.99, date: "Adidas" },
-        { id: 3, name: "Hoka One One Clifton 8", location: 129.99, distance: 159.99, date: "Hoka One"},
-        { i3: 4, name: "Brooks Ghost 14", location: 129.99, distance: 149.99, date: "Brooks" },
+        { id: 1, name: "London Marathon", location: "London, UK", distance: "26.2m", date: "2024-10-13" },
+        { id: 2, name: "Paris Marathon", location: "Paris, France", distance: "26.2m", date: "2024-11-03" },
+        { id: 3, name: "Berlin Marathon", location: "Berlin, Germany", distance: "26.2m", date: "2024-10-12" },
+        { id: 4, name: "Tokyo Marathon", location: "Tokyo, Japan", distance: "26.2m", date: "2024-07-04" },
     ]
 
     const completedRaces = [
-        { id: 1, name: "Nike Flex Stride 5in", location: 39.99, distance: 49.99, date: "Dicks Sporting Goods" },
-        { id: 2, name: "Adidas Own The Run", location: 29.99, distance: 39.99, date: "Adidas" },
-        { id: 3, name: "Under Armour Launch SW 7in", location: 34.99, distance: 44.99, date: "Under Armour" },
-        { id: 4, name: "New Balance Impact Run 5in", location: 39.99, distance: 49.99, date: "New Balance"}
+        { id: 1, name: "Tryhard 5k", location: "Chicago, IL", distance: "5km", date: "8-2-2023" },
+        { id: 2, name: "All in 10k", location: "Chicago, IL", distance: "10km", date: "9-12-2023" },
+        { id: 3, name: "Iphone release 10Km", location: "Chicago, IL", distance: "10km", date: "9-14-2023" },
+        { id: 4, name: "Boston Marathon", location: "Chicago, IL", distance: "13.1m", date: "11-15-2023" },
     ];
     
     return (

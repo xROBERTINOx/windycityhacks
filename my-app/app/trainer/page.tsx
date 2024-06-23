@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Header from '../Header';
 import { getLocalStorage, setLocalStorage } from '../localStorage';
 
+import { useRouter } from 'next/navigation';
+
+
 // Simulated database of national races
 const nationalRaces = [
   { id: 1, name: "Chicago Marathon", date: "2024-10-13", distance: 42195, unit: "meters" },
@@ -13,8 +16,16 @@ const nationalRaces = [
   { id: 5, name: "San Francisco Half Marathon", date: "2024-07-23", distance: 21097, unit: "meters" },
 ];
 
+
+
 const AITrainer = () => {
-  const [hasTrainer, setHasTrainer] = useState(false);
+    const router = useRouter();
+    if (getLocalStorage('isSignedIn') !== true) {
+      router.push('/signin');
+  }
+  
+  
+    const [hasTrainer, setHasTrainer] = useState(false);
   const [goal, setGoal] = useState('');
   const [selectedRun, setSelectedRun] = useState('');
   const [trainerGender, setTrainerGender] = useState('');
