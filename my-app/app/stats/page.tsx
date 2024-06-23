@@ -304,23 +304,43 @@ function App() {
     }
 
     return (
-        <div className="App">
-            <Header />
-            <div>
-                <label htmlFor="unit">Unit:</label>
-                <select id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} style={{ backgroundColor: 'black', color: 'white', border: '1px solid white' }}>
-                    <option value="miles">Miles</option>
-                    <option value="kilometers">Kilometers</option>
-                </select>
-            </div>
+        <div className="container mx-auto px-4 py-8">
+          <Header />
+          <h1 className="text-4xl font-bold mb-8 text-center">Your Running Stats</h1>
+      
+          <div className="mb-8">
+            <label htmlFor="unit" className="text-black mr-2 font-semibold">Unit:</label>
+            <select 
+              id="unit" 
+              value={unit} 
+              onChange={(e) => setUnit(e.target.value)}
+              className="bg-white text-black border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="miles">Miles</option>
+              <option value="kilometers">Kilometers</option>
+            </select>
+          </div>
+      
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {showActivities()}
-            <div style={{ width: '80%', maxWidth: '600px', margin: '20px auto' }}>
+          </div>
+      
+          <div className="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4 text-black">Performance Charts</h2>
+            <div className="space-y-8">
+              <div>
                 <canvas ref={chartRef}></canvas>
+              </div>
+              <div>
                 <canvas ref={chartRefSpeedData}></canvas>
+              </div>
+              <div>
                 <canvas ref={chartRefHeartRateData}></canvas>
+              </div>
             </div>
+          </div>
         </div>
-    );
+      );
 }
 
 export default App;
