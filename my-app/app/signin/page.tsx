@@ -1,21 +1,24 @@
 'use client';
 import React, { useState } from 'react';
+import { getLocalStorage, setLocalStorage } from '../localStorage';    
+import { useRouter } from 'next/navigation';
+import Header from '../Header';
 
 const SignIn = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const router = useRouter();
 
     const handleSignIn = () => {
-        // Perform sign-in logic here
-
-        // Display alert
-        alert('User signed in');
+        setLocalStorage('isSignedIn', true);
+        setLocalStorage('username', username);
+        router.push('/stats');
     };
 
     return (
         <div>
-            <h1>Hello World</h1>
-            <p>Welcome to my Next.js TypeScript page!</p>
+            <Header />
+            <h1>Sign In Page</h1>
             <form>
                 <label>
                     Username:
@@ -37,8 +40,8 @@ const SignIn = () => {
                     />
                 </label>
                 <br />
-                <button type="button" onClick={handleSignIn}>
-                    Sign In
+                <button type="button" onClick={handleSignIn} style={{border: '1px solid white'}}>
+                    Submit
                 </button>
             </form>
         </div>

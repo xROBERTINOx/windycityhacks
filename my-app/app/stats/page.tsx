@@ -18,15 +18,12 @@ function App() {
     const [chartData, setChartData] = useState<{ x: number; y: number; }[]>([]);
     const [speedData, setSpeedData] = useState<{ x: number; y: number; }[]>([]);
     const [heartRateData, setHeartRateData] = useState<{ x: number; y: number; }[]>([])
-    const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
     const router = useRouter();
-  
-    useEffect(() => {
-        const storedData = getLocalStorage('isSignedIn');
-        if (!storedData) {
-          router.push('/signin');
-        }
-      }, []);
+
+
+    if (getLocalStorage('isSignedIn') !== true) {
+        router.push('/signin');
+    }
 
 
     function linearRegression(data: { x: number; y: number; }[]) {
