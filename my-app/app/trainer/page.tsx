@@ -106,7 +106,7 @@ const AITrainer = () => {
     }
   };
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     setAiResponse('Loading...');
     e.preventDefault();
 
