@@ -26,7 +26,7 @@ const Header = () => {
             Ghananese River Running
           </Link>
           <div className="flex items-center space-x-4">
-            <HeaderButton href="/" text="Home" isActive={pathname === '/'} />
+            {/* <HeaderButton href="/" text="Home" isActive={pathname === '/'} /> */}
             {isSignedIn && (
               <>
                 <HeaderButton
