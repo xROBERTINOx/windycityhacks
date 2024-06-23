@@ -3,8 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../Header';
 import { getLocalStorage, setLocalStorage } from '../localStorage';
-
 import { useRouter } from 'next/navigation';
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Access your API key as an environment variable (see "Set up your API key" above)
+const genAI = new GoogleGenerativeAI("AIzaSyC63JzxZHB6RqYrg50yklQ1UcsM0knpJbQ");
+
+// The Gemini 1.5 models are versatile and work with most use cases
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
 
 // Simulated database of national races
@@ -25,7 +31,7 @@ const AITrainer = () => {
   }
   
   
-    const [hasTrainer, setHasTrainer] = useState(false);
+  const [hasTrainer, setHasTrainer] = useState(false);
   const [goal, setGoal] = useState('');
   const [selectedRun, setSelectedRun] = useState('');
   const [trainerGender, setTrainerGender] = useState('');
@@ -36,6 +42,8 @@ const AITrainer = () => {
   const [daysUntilHackathon, setDaysUntilHackathon] = useState(0);
   const [trainingProgress, setTrainingProgress] = useState({ percentage: 0, pace: '', targetPace: '' });
   const [daysOnTrack, setDaysOnTrack] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
 
 
   useEffect(() => {
@@ -96,6 +104,32 @@ const AITrainer = () => {
       setUpcomingRuns(updatedRuns);
       setLocalStorage('upcomingRuns', updatedRuns);
     }
+  };
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAiResponse('Loading...');
+    e.preventDefault();
+
+    try {
+      // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+    
+      const prompt = searchTerm;
+    
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      console.log(text);
+      setAiResponse(text);
+    } catch (error) {
+      console.error(error);
+      alert(error);
+    }
+  };
+
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // In a real app, you would make an API call here to search for friends
   };
 
   return (
@@ -232,6 +266,31 @@ const AITrainer = () => {
               <p>Current pace: {trainingProgress.pace} / Target pace: {trainingProgress.targetPace}</p>
               <p>Days on track: {daysOnTrack}</p>
             </div>
+
+            <div className="bg-gray-900 rounded-lg shadow-md p-6 mb-8">
+              <form onSubmit={handleSearch} className="mb-6">
+                <div className="flex">
+                  <input
+                    type="text"
+                    placeholder="Enter questions about your training plan..."
+                    value={searchTerm}
+                    onChange={handleOnChange}
+                    className="flex-grow bg-gray-800 text-white border border-gray-700 rounded-l-md py-2 px-4"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
+              
+            {aiResponse && <div className="bg-gray-800 rounded-lg p-4 mb-6">
+              <h3 className="text-xl font-semibold mb-2">{aiResponse}</h3>
+
+            </div> }
           </div>
         )}
       </div>
@@ -240,3 +299,7 @@ const AITrainer = () => {
 };
 
 export default AITrainer;
+
+function preventDefault() {
+  throw new Error('Function not implemented.');
+}
