@@ -130,7 +130,7 @@ const ShoppingPage: React.FC = () => {
           </div>
 
           <div className="bg-gray-800 rounded-lg p-4 mb-6">
-            <h3 className="text-xl font-semibold mb-2">Past Races You've Completed</h3>
+            <h3 className="text-xl font-semibold mb-2">Past Races You&apos;ve Completed</h3>
             <table className="w-full">
               <thead>
                 <tr>
