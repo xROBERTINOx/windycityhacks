@@ -5,6 +5,8 @@ const HomePage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Welcome to Ghananese River Running</h1>
+      <h2 className="text-2xl font-semibold mb-2 text-center">There I Go Co.</h2>
+      <br></br>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Section
@@ -16,9 +18,9 @@ const HomePage: React.FC = () => {
 
         <Section
           title="DASH-board"
-          description='Level up your runs by tracking your progress with experience points and achievements'
-          buttonText='View DASH-board'
-          buttonLink='/dashboard'
+          description="Level up your runs by tracking your progress with experience points and achievements"
+          buttonText="View DASH-board"
+          buttonLink="/dashboard"
         />
 
         <Section
